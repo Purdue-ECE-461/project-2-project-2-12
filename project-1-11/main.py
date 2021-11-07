@@ -68,12 +68,13 @@ if __name__ == "__main__":
         cor_score = getCorrectness(owner, module)
         bus_score = getBusFactor(owner, module)
         license_score = getLicenseComp(owner, module)
-        total_score = getTotalScore(rsp_score, rmp_score, cor_score, bus_score, license_score)
+        depend_score = getDependencyScore(owner, module)
+        total_score = getTotalScore(rsp_score, rmp_score, cor_score, bus_score, license_score, depend_score)
         logging.info("Metric scores succesfully calculated.")
         line = line.strip("\n")
         printOrder.append(total_score)
         printStrings[
-            total_score] = f"{line} {round(total_score, 2)} {round(rmp_score, 2)} {round(cor_score, 2)} {round(bus_score, 2)} {round(rsp_score, 2)} {round(license_score, 2)}"
+            total_score] = f"{line} {round(total_score, 2)} {round(rmp_score, 2)} {round(cor_score, 2)} {round(bus_score, 2)} {round(rsp_score, 2)} {round(license_score, 2)} {round(depend_score, 2)}"
 
     printOrder.sort()
     for i in printOrder[::-1]:
