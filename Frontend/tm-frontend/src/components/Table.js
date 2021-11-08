@@ -21,30 +21,39 @@ const rows = [
 
 export default function Header() {
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Package Name</TableCell>
-            <TableCell align="left">Package URL</TableCell>
-            <TableCell align="right">Overall Rating</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow
-              key={row.packageName}
-              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">
-                {row.packageName}
-              </TableCell>
-              <TableCell align="left">{row.packageURL}</TableCell>
-              <TableCell align="right">{row.rating}</TableCell>
+    <div
+      style={{
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+      }}
+    >
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Package Name</TableCell>
+              <TableCell align="left">Package URL</TableCell>
+              <TableCell align="right">Overall Rating</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow
+                key={row.packageName}
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {row.packageName}
+                </TableCell>
+                <TableCell align="left">{row.packageURL}</TableCell>
+                <TableCell align="right">{row.rating}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
   );
 }
