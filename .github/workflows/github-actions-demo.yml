@@ -14,7 +14,7 @@ jobs:
       matrix:
         python-version: [3.9]
     env:
-      GITHUB_TOKEN: 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
+      GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
       LOG_FILE: log.txt
     steps:
     - uses: actions/checkout@v2
@@ -33,12 +33,12 @@ jobs:
         python3 -m pip install bs4
     - name: Run tests on project 1
       run: |
-        export GITHUB_TOKEN="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"
         export LOG_FILE=log.txt
         python3 project-1-11/main.py project-1-11/url.txt
 
 
-
+#      env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 # - name: pull request
 #         if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
