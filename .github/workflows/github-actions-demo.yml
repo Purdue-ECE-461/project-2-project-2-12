@@ -30,7 +30,7 @@ jobs:
         python3 -m pip install bs4
     - name: Run tests on project 1
       env:
-        GITHUB_TOKEN: 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
+        GITHUB_TOKEN: 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
         LOG_FILE: log.txt
       run: |
         python3 project-1-11/main.py project-1-11/url.txt
