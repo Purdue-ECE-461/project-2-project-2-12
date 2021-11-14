@@ -481,3 +481,16 @@ INFO:root:URL: https://github.com/expressjs/express
 INFO:root:Repository Owner: expressjs  Module: express
 INFO:root:Fetching repo, calculating scores...
 INFO:root:Metric scores succesfully calculated.
+INFO:root:URL: https://github.com/expressjs/express
+INFO:root:Repository Owner: expressjs  Module: express
+INFO:root:Fetching repo, calculating scores...
+INFO:root:URL: https://github.com/expressjs/express
+INFO:root:Repository Owner: expressjs  Module: express
+INFO:root:Fetching repo, calculating scores...
+INFO:root:URL: https://github.com/expressjs/express
+INFO:root:Repository Owner: expressjs  Module: express
+INFO:root:Fetching repo, calculating scores...
+INFO:root:URL: https://github.com/expressjs/express
+INFO:root:Repository Owner: expressjs  Module: express
+INFO:root:Fetching repo, calculating scores...
+INFO:root:Metric scores succesfully calculated.
