@@ -14,11 +14,10 @@ header = {
     'Authorization': f"token {os.getenv('GITHUB_TOKEN')}"
 }
 
-
 def getDependencies(owner, module):
     url = 'https://github.com/{}/network/dependencies'.format(owner + '/' + module)
 
-    r = requests.get(url)
+    r = requests.get(url, headers=header)
     soup = BeautifulSoup(r.content, "html.parser")
 
     data = [

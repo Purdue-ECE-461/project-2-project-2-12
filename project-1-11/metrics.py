@@ -1,10 +1,4 @@
-import sys
 from request_handle import *
-import requests
-from random import *
-import os
-import dotenv
-
 
 def getDependencyScore(owner, module):
     score = 0

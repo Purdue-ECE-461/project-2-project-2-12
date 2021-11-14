@@ -1,16 +1,9 @@
-import sys
-from request_handle import *
-from posixpath import basename, dirname
 from urllib.parse import urlparse
 from metrics import *
-import requests
-from random import *
 import os
-import dotenv
 import re
 import logging
 from bs4 import BeautifulSoup
-from urllib.request import *
 import urllib
 import urllib.request
 
@@ -41,11 +34,10 @@ def urlParse(url):
 
 if __name__ == "__main__":
     npm_flag = 'www.npmjs.com'
-
     printOrder = []
     printStrings = {}
     levels = {'0': logging.CRITICAL, '1': logging.INFO, '2': logging.DEBUG}
-    logging.basicConfig(filename=os.getenv('LOG_FILE'), level=levels[os.getenv('LOG_LEVEL')])
+    logging.basicConfig(filename=os.getenv('LOG_FILE'), level=levels[os.getenv('LOG_LEVEL')], filemode="w")
     if len(sys.argv) < 2:
         logging.info("DEBUG - Wrong number of inputs!")
 
@@ -61,7 +53,11 @@ if __name__ == "__main__":
         logging.info(f"URL: {line}")
         logging.info(f"Repository Owner: {owner} " + f" Module: {module}")
         # Change the owner and module name to corresponding names to test for different repo
-
+        test_response = getRepo(owner, module)
+        if 'message' in test_response:
+            logging.warning("bad credentials")
+            import sys
+            sys.exit()
         logging.info("Fetching repo, calculating scores...")
         rsp_score = getResponsiveness(owner, module)
         rmp_score = getRampUpTime(owner, module)
