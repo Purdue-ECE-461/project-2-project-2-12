@@ -34,7 +34,6 @@ jobs:
     - name: Run tests on project 1
       run: |
         echo "GITHUB_TOKEN=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" >> $GITHUB_ENV
-      run: |
         python3 project-1-11/main.py project-1-11/url.txt
 
 
