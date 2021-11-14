@@ -21,8 +21,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python3 -m pip install -r requirements.txt
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        python3 -m pip install -r certifi==2021.5.30
+        python3 -m pip install -r charset-normalizer==2.0.6
+        python3 -m pip install -r idna==3.2
+        python3 -m pip install -r python-dotenv==0.19.0
+        python3 -m pip install -r requests==2.26.0
+        python3 -m pip install -r urllib3==1.26.6
     - name: Run tests on project 1
       run: |
         python3 main.py url.txt
