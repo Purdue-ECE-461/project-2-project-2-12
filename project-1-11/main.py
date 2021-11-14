@@ -18,7 +18,8 @@ import urllib.request
 def getNpmRepo(url):
     page = urllib.request.urlopen(url)
     soup = BeautifulSoup(page, 'html.parser')
-    git_url_box = soup.find('a', attrs={'class': 'b2812e30 f2874b88 fw6 mb3 mt2 truncate black-80 f4 link'})
+    git_url_box = soup.find('a', attrs={'class': 'b2812e30 f2874b88 '
+                                                 'fw6 mb3 mt2 truncate black-80 f4 link'})
     git_url = 'https://' + git_url_box.text[3:]
 
     """ This is the original code """
@@ -39,7 +40,6 @@ def urlParse(url):
 
 
 if __name__ == "__main__":
-    # TODO: Get input from url.txt data, split each repo html to its owner and author and assign to corresponding variables
     npm_flag = 'www.npmjs.com'
 
     printOrder = []
@@ -79,11 +79,3 @@ if __name__ == "__main__":
     printOrder.sort()
     for i in printOrder[::-1]:
         print(printStrings[i])
-        # TODO: Write each score output to a file in the following format: 
-        #     Sample Output (to Stdout):
-        # URL NET_SCORE RAMP_UP_SCORE CORRECTNESS_SCORE BUS_FACTOR_SCORE RESPONSIVE_MAINTAINER_SCORE LICENSE_SCORE
-        # https://github.com/nullivex/nodist 0.9 0.5 0.7 0.3 0.4 1
-        # https://www.npmjs.com/package/browserify 0.76 0.5 0.7 0.3 0.6 1
-        # https://github.com/cloudinary/cloudinary_npm 0.6 0.5 0.7 0.3 0.2 1
-        # https://github.com/lodash/lodash 0.5 0.5 0.3 0.7 0.6 1
-        # https://www.npmjs.com/package/express 0 0.5 0.7 0.3 0.6 0
