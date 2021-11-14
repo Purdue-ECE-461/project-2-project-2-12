@@ -38,5 +38,5 @@ jobs:
         python3 project-1-11/main.py project-1-11/url.txt
     - name: Analysing the code with pylint
       run: |
-        find . -name '*.py' -exec pylint {} \;
+        find project-1-11 -name '*.py' -exec pylint {} \;
 
