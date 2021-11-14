@@ -38,7 +38,7 @@ jobs:
         python3 project-1-11/main.py project-1-11/url.txt
     - name: Analysing the code with pylint
       run: |
-        pylint project-1-11/main.py
-        pylint project-1-11/metrics.py
-        pyling project-1-11/request_handle.py
+        pylint -E project-1-11/main.py
+        pylint -E project-1-11/metrics.py
+        pyling -E project-1-11/request_handle.py
 
