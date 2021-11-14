@@ -38,5 +38,5 @@ jobs:
         python3 project-1-11/main.py project-1-11/url.txt
     - name: Analysing the code with pylint
       run: |
-        pylint 'ls -R|grep .py$|xargs'
+        find . -name '*.py' -exec pylint {} \;
 
