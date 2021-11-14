@@ -19,7 +19,6 @@ def getResponsiveness(owner, module):
     repo = getRepo(owner, module)
     issues = getIssues(owner, module)
     #   Calculating the Issue close ratio
-    print(repo)
     open_issues = repo['open_issues']
     closed_issues = getNumOfIssues(owner, module)
     score = 100 - (100 / ((closed_issues + open_issues) / open_issues))
