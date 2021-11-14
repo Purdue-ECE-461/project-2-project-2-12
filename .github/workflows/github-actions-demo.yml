@@ -29,6 +29,9 @@ jobs:
         python3 -m pip install urllib3==1.26.6
         python3 -m pip install bs4
     - name: Run tests on project 1
+      env:
+        GITHUB_TOKEN: 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
+        LOG_FILE: log.txt
       run: |
         python3 project-1-11/main.py project-1-11/url.txt
 
