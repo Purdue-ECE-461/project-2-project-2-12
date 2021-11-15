@@ -1,4 +1,4 @@
-name: Python package
+name: test and check project 1 contents
 on:
   push:
     branches:
