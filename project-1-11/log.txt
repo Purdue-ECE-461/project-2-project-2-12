@@ -1,4 +1,10 @@
-INFO:root:URL: https://github.com/expressjs/express
-INFO:root:Repository Owner: expressjs  Module: express
+INFO:root:URL: https://www.npmjs.com/package/chalk
+
+INFO:root:Repository Owner: chalk  Module: chalk
 INFO:root:Fetching repo, calculating scores...
 INFO:root:Metric scores succesfully calculated.
+INFO:root:URL: https://github.com/Roserot/test-task-app
+
+INFO:root:Repository Owner: Roserot  Module: test-task-app
+INFO:root:Fetching repo, calculating scores...
+WARNING:root:Error

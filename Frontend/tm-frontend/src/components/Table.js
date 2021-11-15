@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,15 +11,30 @@ function createData(packageName, packageURL, rating) {
   return { packageName, packageURL, rating };
 }
 
-const rows = [
-  createData("Lodash", "https://github.com/lodash/lodash", 0.85),
-  createData("Lodash", "https://github.com/lodash/lodash", 0.85),
-  createData("Lodash", "https://github.com/lodash/lodash", 0.85),
-  createData("Lodash", "https://github.com/lodash/lodash", 0.85),
-  createData("Lodash", "https://github.com/lodash/lodash", 0.85),
-];
+function translateData(apiData) {
+  const rows = [];
+  for (const [key, value] of Object.entries(apiData)) {
+    rows.push(createData(value["name"], value["url"], value["rating"]));
+  }
+
+  console.log(rows);
+  return rows;
+}
+
+const url = "http://127.0.0.1:5000/getPackages";
 
 export default function Header() {
+  const [tableData, setTableData] = useState([]);
+
+  // Component will mount
+  useEffect(() => {
+    fetch(url)
+      .then((res) => res.json())
+      .then((res) => setTableData(res));
+  }, []);
+
+  const rows = translateData(tableData);
+
   return (
     <div
       style={{
