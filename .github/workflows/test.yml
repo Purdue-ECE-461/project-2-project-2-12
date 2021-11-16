@@ -1,8 +1,5 @@
 name: test and check project 1 contents
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
