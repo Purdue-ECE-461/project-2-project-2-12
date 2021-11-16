@@ -19,6 +19,8 @@ jobs:
     steps:
     - name: Deploy to App Engine
       uses: google-github-actions/deploy-appengine@v0.4.0
+      with:
+        credentials: ${{ secrets.gcp_credentials }}
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
