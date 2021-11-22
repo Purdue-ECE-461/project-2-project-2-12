@@ -1,4 +1,4 @@
-name: Deploy to Google App Engine
+name: deploy to google app engine
 on:
   push:
     branches:
