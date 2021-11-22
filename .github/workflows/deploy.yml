@@ -8,12 +8,12 @@ jobs:
     name: GAE Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Login
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_email: ${{ secrets.GCP_EMAIL }}
-          service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+    - name: Login
+      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_email: ${{ secrets.GCP_EMAIL }}
+        service_account_key: ${{ secrets.GCP_CREDENTIALS }}
     - name: Deploy
       run: |
         run: gcloud run deploy ${{ secrets.GCP_PROJECT_ID }} --region us-central1 --platform managed
