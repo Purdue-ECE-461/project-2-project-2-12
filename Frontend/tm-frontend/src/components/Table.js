@@ -21,7 +21,7 @@ function translateData(apiData) {
   return rows;
 }
 
-const url = "http://127.0.0.1:5000/getPackages";
+const url = "https://ece-461-pyapi.ue.r.appspot.com/getPackages";
 
 export default function Header() {
   const [tableData, setTableData] = useState([]);
