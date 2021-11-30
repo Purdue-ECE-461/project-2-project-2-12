@@ -14,6 +14,36 @@ if not os.path.exists(upload_folder):
     os.mkdir(upload_folder)
 
 app.config['UPLOAD_FOLDER'] = upload_folder
+packages = [
+    {
+        'name': 'Lodash',
+        'version': '1.1.0',
+        'url': 'https://github.com/lodash/lodash',
+        'id': 'lodash',
+        'data': 'null'
+    },
+    {
+        'name': 'Lodash1',
+        'version': '1.1.1',
+        'url': 'https://github.com/lodash/lodash1',
+        'id': 'lodash1',
+        'data': 'null1'
+    },
+    {
+        'name': 'Lodash2',
+        'version': '1.1.2',
+        'url': 'https://github.com/lodash/lodash2',
+        'id': 'lodash2',
+        'data': 'null2'
+    },
+    {
+        'name': 'Lodash3',
+        'version': '1.1.3',
+        'url': 'https://github.com/lodash/lodash3',
+        'id': 'lodash3',
+        'data': 'null3'
+    },
+]
 
 
 @app.route('/getPackages', methods=['GET'])
