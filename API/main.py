@@ -1,9 +1,19 @@
-import flask
+import os
+from flask import Flask, render_template, request
+from werkzeug.utils import secure_filename
 from flask_cors import CORS, cross_origin
 
-app = flask.Flask(__name__)
+# initialising the flask app
+app = Flask(__name__)
 cors = CORS(app)
 app.config["DEBUG"] = True
+
+# Creating the upload folder
+upload_folder = "uploads/"
+if not os.path.exists(upload_folder):
+    os.mkdir(upload_folder)
+
+app.config['UPLOAD_FOLDER'] = upload_folder
 
 
 @app.route('/getPackages', methods=['GET'])
@@ -19,6 +29,27 @@ def home():
         7: {'name': 'Test6', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
         8: {'name': 'Test7', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
     }
+
+
+@app.route('/package/<int:id>', methods=['GET'])
+def getPackage(id):
+    pass
+
+
+@app.route('/')  # The path for uploading the file
+def upload_file():
+    return render_template('upload.html')
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+def uploadfile():
+    if request.method == 'POST':  # check if the method is post
+        f = request.files['file']  # get the file from the files object
+        # Saving the file in the required destination
+        # this will secure the file
+        f.save(os.path.join(
+            app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
+        return 'file uploaded successfully'  # Display thsi message after uploading
 
 
 if __name__ == "__main__":

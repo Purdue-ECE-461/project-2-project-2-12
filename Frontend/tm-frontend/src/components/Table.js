@@ -17,11 +17,11 @@ function translateData(apiData) {
     rows.push(createData(value["name"], value["url"], value["rating"]));
   }
 
-  console.log("Hello2");
   return rows;
 }
 
-const url = "https://ece-461-pyapi.ue.r.appspot.com/getPackages";
+let url = "https://ece-461-pyapi.ue.r.appspot.com/getPackages";
+url = "http://127.0.0.1:5000/getPackages";
 
 export default function Header() {
   const [tableData, setTableData] = useState([]);
@@ -63,6 +63,7 @@ export default function Header() {
                 </TableCell>
                 <TableCell align="left">{row.packageURL}</TableCell>
                 <TableCell align="right">{row.rating}</TableCell>
+                <TableCell align="right">Upload</TableCell>
               </TableRow>
             ))}
           </TableBody>
