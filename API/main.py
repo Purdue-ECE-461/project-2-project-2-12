@@ -2,48 +2,47 @@ import os
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 from flask_cors import CORS, cross_origin
+import pymysql
+
 
 # initialising the flask app
 app = Flask(__name__)
 cors = CORS(app)
 app.config["DEBUG"] = True
 
-# Creating the upload folder
-upload_folder = "uploads/"
-if not os.path.exists(upload_folder):
-    os.mkdir(upload_folder)
+# Create database environment variables
+db_user = os.environ.get('CLOUD_SQL_USERNAME')
+db_password = os.environ.get('CLOUD_SQL_PASSWORD')
+db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
+db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
 
-app.config['UPLOAD_FOLDER'] = upload_folder
-packages = [
-    {
-        'name': 'Lodash',
-        'version': '1.1.0',
-        'url': 'https://github.com/lodash/lodash',
-        'id': 'lodash',
-        'data': 'null'
-    },
-    {
-        'name': 'Lodash1',
-        'version': '1.1.1',
-        'url': 'https://github.com/lodash/lodash1',
-        'id': 'lodash1',
-        'data': 'null1'
-    },
-    {
-        'name': 'Lodash2',
-        'version': '1.1.2',
-        'url': 'https://github.com/lodash/lodash2',
-        'id': 'lodash2',
-        'data': 'null2'
-    },
-    {
-        'name': 'Lodash3',
-        'version': '1.1.3',
-        'url': 'https://github.com/lodash/lodash3',
-        'id': 'lodash3',
-        'data': 'null3'
-    },
-]
+
+@app.route('/')
+def main():
+    # When deployed to App Engine, the `GAE_ENV` environment variable will be
+    # set to `standard`
+    if os.environ.get('GAE_ENV') == 'standard':
+        # If deployed, use the local socket interface for accessing Cloud SQL
+        unix_socket = '/cloudsql/{}'.format(db_connection_name)
+        cnx = pymysql.connect(user=db_user, password=db_password,
+                              unix_socket=unix_socket, db=db_name)
+    else:
+        # If running locally, use the TCP connections instead
+        # Set up Cloud SQL Proxy (cloud.google.com/sql/docs/mysql/sql-proxy)
+        # so that your application can use 127.0.0.1:3306 to connect to your
+        # Cloud SQL instance
+        host = '127.0.0.1'
+        cnx = pymysql.connect(user=db_user, password=db_password,
+                              host=host, db=db_name)
+
+    with cnx.cursor() as cursor:
+        cursor.execute('select * from packages;')
+        result = cursor.fetchall()
+        current_msg = result[0][0]
+    cnx.close()
+
+    return str(current_msg)
+# [END gae_python37_cloudsql_mysql]
 
 
 @app.route('/getPackages', methods=['GET'])
@@ -66,21 +65,5 @@ def getPackage(id):
     pass
 
 
-@app.route('/')  # The path for uploading the file
-def upload_file():
-    return render_template('upload.html')
-
-
-@app.route('/upload', methods=['GET', 'POST'])
-def uploadfile():
-    if request.method == 'POST':  # check if the method is post
-        f = request.files['file']  # get the file from the files object
-        # Saving the file in the required destination
-        # this will secure the file
-        f.save(os.path.join(
-            app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
-        return 'file uploaded successfully'  # Display thsi message after uploading
-
-
 if __name__ == "__main__":
-    app.run()
+    app.run(host='127.0.0.1', port=8080, debug=True)

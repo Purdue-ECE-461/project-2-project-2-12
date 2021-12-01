@@ -1,14 +1,9 @@
-runtime: python
-env: flex
-entrypoint: gunicorn -b :$PORT main:app
+# [START gae_python37_cloudsql_config]
+runtime: python37
 
-runtime_config:
-  python_version: 3
-
-# Incurs costs to run on the App Engine flexible environment
-# Settings below are to reduce costs during testing and are not for production use
-manual_scaling:
-  instances: 1
-resources:
-  cpu: 1
-  memory_gb: 0.5
+env_variables:
+  CLOUD_SQL_USERNAME: prembhanderi
+  CLOUD_SQL_PASSWORD: justguess
+  CLOUD_SQL_DATABASE_NAME: mydatabase
+  CLOUD_SQL_CONNECTION_NAME: ece-461-pyapi:us-east1:project2-mysql-database
+# [END gae_python37_cloudsql_config]
