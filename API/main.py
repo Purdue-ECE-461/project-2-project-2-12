@@ -1,8 +1,6 @@
-import os
-from flask import Flask, render_template, request
-from werkzeug.utils import secure_filename
+from flask import Flask, request
 from flask_cors import CORS, cross_origin
-import pymysql
+from db import *
 
 
 # initialising the flask app
@@ -10,39 +8,20 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config["DEBUG"] = True
 
-# Create database environment variables
-db_user = os.environ.get('CLOUD_SQL_USERNAME')
-db_password = os.environ.get('CLOUD_SQL_PASSWORD')
-db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
-db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
 
+# @app.route('/')
+# def main():
+#     # When deployed to App Engine, the `GAE_ENV` environment variable will be
+#     # set to `standard`
 
-@app.route('/')
-def main():
-    # When deployed to App Engine, the `GAE_ENV` environment variable will be
-    # set to `standard`
-    if os.environ.get('GAE_ENV') == 'standard':
-        # If deployed, use the local socket interface for accessing Cloud SQL
-        unix_socket = '/cloudsql/{}'.format(db_connection_name)
-        cnx = pymysql.connect(user=db_user, password=db_password,
-                              unix_socket=unix_socket, db=db_name)
-    else:
-        # If running locally, use the TCP connections instead
-        # Set up Cloud SQL Proxy (cloud.google.com/sql/docs/mysql/sql-proxy)
-        # so that your application can use 127.0.0.1:3306 to connect to your
-        # Cloud SQL instance
-        host = '127.0.0.1'
-        cnx = pymysql.connect(user=db_user, password=db_password,
-                              host=host, db=db_name)
+# with cnx.cursor() as cursor:
+#     cursor.execute('select * from packages;')
+#     result = cursor.fetchall()
+#     current_msg = result[0][0]
+# cnx.close()
 
-    with cnx.cursor() as cursor:
-        cursor.execute('select * from packages;')
-        result = cursor.fetchall()
-        current_msg = result[0][0]
-    cnx.close()
-
-    return str(current_msg)
-# [END gae_python37_cloudsql_mysql]
+#     return str(current_msg)
+# # [END gae_python37_cloudsql_mysql]
 
 
 @app.route('/getPackages', methods=['GET'])
@@ -60,9 +39,33 @@ def home():
     }
 
 
-@app.route('/package/<int:id>', methods=['GET'])
-def getPackage(id):
-    pass
+@app.route('/package/<string:id>', methods=['GET', 'POST'])
+def getPackageById(id):
+    if request.method == 'GET':
+        query_response = run_select_query(
+            f'select * from packages where id="{id}"')
+
+        return {
+            "metadata": {
+                "Name": query_response[0],
+                "Version": query_response[1],
+                "ID": query_response[2]
+            },
+            "data": {
+                "Content": query_response[4],
+                "URL": query_response[3],
+                "JSProgram": "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}\n"
+            }
+        }
+    elif request.method == 'POST':
+        json_data = request.json
+        print(json_data['data']['Content'])
+        print(
+            f"UPDATE packages SET content=\'{json_data['data']['Content']}\' WHERE id=\'{id}\'")
+        query_response = run_update_query(
+            f"UPDATE packages SET content=\'{json_data['data']['Content']}\' WHERE id=\'{id}\'")
+
+        return {}, 200
 
 
 if __name__ == "__main__":
