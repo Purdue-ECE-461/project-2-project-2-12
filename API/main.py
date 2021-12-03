@@ -39,33 +39,48 @@ def home():
     }
 
 
-@app.route('/package/<string:id>', methods=['GET', 'POST'])
+@app.route('/package/<string:id>', methods=['GET', 'PUT', 'DELETE'])
 def getPackageById(id):
     if request.method == 'GET':
         query_response = run_select_query(
             f'select * from packages where id="{id}"')
 
-        return {
-            "metadata": {
-                "Name": query_response[0],
-                "Version": query_response[1],
-                "ID": query_response[2]
-            },
-            "data": {
-                "Content": query_response[4],
-                "URL": query_response[3],
-                "JSProgram": "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}\n"
+        if (query_response != 'No response'):
+            return {
+                "metadata": {
+                    "Name": query_response[0],
+                    "Version": query_response[1],
+                    "ID": query_response[2]
+                },
+                "data": {
+                    "Content": query_response[4],
+                    "URL": query_response[3],
+                    "JSProgram": "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}\n"
+                }
             }
-        }
-    elif request.method == 'POST':
+        else:
+            return {}, 404
+    elif request.method == 'PUT':
         json_data = request.json
-        print(json_data['data']['Content'])
-        print(
-            f"UPDATE packages SET content=\'{json_data['data']['Content']}\' WHERE id=\'{id}\'")
         query_response = run_update_query(
             f"UPDATE packages SET content=\'{json_data['data']['Content']}\' WHERE id=\'{id}\'")
 
         return {}, 200
+    elif request.method == 'DELETE':
+        query_response = run_update_query(
+            f"DELETE FROM packages WHERE id='{id}'")
+
+        return {}, 200
+
+
+@app.route('/package/<string:id>/rate', methods=['GET'])
+def get_package_rating():
+    pass
+
+
+@app.route('/package/byName/<string:name>', methods=['GET'])
+def get_package_by_name():
+    pass
 
 
 if __name__ == "__main__":
