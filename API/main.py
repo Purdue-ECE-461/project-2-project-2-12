@@ -82,6 +82,12 @@ def get_package_rating():
 def get_package_by_name():
     pass
 
+    @app.route('/package', methods=['POST'])
+    def ingestPackage(id):
+
+
 
 if __name__ == "__main__":
+
+    # 127.0.0.1
     app.run(host='127.0.0.1', port=8080, debug=True)
