@@ -40,7 +40,7 @@ def home():
 
 
 @app.route('/package/<string:id>', methods=['GET', 'POST'])
-def getPackageById(id):
+def ingestPackage(id):
     if request.method == 'GET':
         query_response = run_select_query(
             f'select * from packages where id="{id}"')
@@ -67,6 +67,16 @@ def getPackageById(id):
 
         return {}, 200
 
+    @app.route('/package', methods=['POST'])
+    def getPackageById(id):
+        return {
+                "Name": query_response[0],
+                "Version": query_response[1],
+                "ID": query_response[2]
+        }
+
 
 if __name__ == "__main__":
+
+    # 127.0.0.1
     app.run(host='127.0.0.1', port=8080, debug=True)
