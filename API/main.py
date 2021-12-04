@@ -9,21 +9,6 @@ cors = CORS(app)
 app.config["DEBUG"] = True
 
 
-# @app.route('/')
-# def main():
-#     # When deployed to App Engine, the `GAE_ENV` environment variable will be
-#     # set to `standard`
-
-# with cnx.cursor() as cursor:
-#     cursor.execute('select * from packages;')
-#     result = cursor.fetchall()
-#     current_msg = result[0][0]
-# cnx.close()
-
-#     return str(current_msg)
-# # [END gae_python37_cloudsql_mysql]
-
-
 @app.route('/getPackages', methods=['GET'])
 @cross_origin()
 def home():
