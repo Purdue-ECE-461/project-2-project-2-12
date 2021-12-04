@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from db import *
+import base64
 
 
 # initialising the flask app
@@ -68,8 +69,24 @@ def getPackageById(id):
         return {}, 200
 
     @app.route('/package', methods=['POST'])
-    def ingestPackage(id):
+    def packageCreate():
+        if request.is_json:
+            package = request.get_json()
+            content = package['data']['content']
+            decoded_bytes = base64.b64decode(content)
 
+            import os
+            if not os.path.exists('package.zip'):
+                with open('package.zip', 'w').close():
+                    pass
+            f = open('package.zip', 'wb')
+            f.write(decoded_bytes)
+            f.close()
+
+            # upload zip file to database
+
+            return package["metadata"], 201
+        # return {"error": "Malformed request"}, 400
 
 
 if __name__ == "__main__":
