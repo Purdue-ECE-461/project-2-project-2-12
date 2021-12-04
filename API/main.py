@@ -82,9 +82,10 @@ def get_package_rating():
 def get_package_by_name():
     pass
 
-    @app.route('/package', methods=['POST'])
-    def ingestPackage(id):
 
+@app.route('/package', methods=['POST'])
+def ingestPackage(id):
+    pass
 
 
 if __name__ == "__main__":
