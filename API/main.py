@@ -76,10 +76,10 @@ def getPackageById(id):
             decoded_bytes = base64.b64decode(content)
 
             import os
-            if not os.path.exists('package.zip'):
-                with open('package.zip', 'w').close():
+            if not os.path.exists(package['metadata']['name']+'.zip'):
+                with open(package['metadata']['name']+'.zip', 'w').close():
                     pass
-            f = open('package.zip', 'wb')
+            f = open(package['metadata']['name']+'.zip', 'wb')
             f.write(decoded_bytes)
             f.close()
 
