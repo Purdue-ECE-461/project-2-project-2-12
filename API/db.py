@@ -80,3 +80,19 @@ def run_delete_query(query):
             current_msg = result[0]
         else:
             return 'No response'
+
+
+def run_insert_query(query):
+    conn = open_connection()
+
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        conn.commit()
+        result = cursor.fetchall()
+
+        conn.close()
+
+        if result:
+            current_msg = result[0]
+        else:
+            return 'No response'

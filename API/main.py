@@ -53,7 +53,7 @@ def getPackageById(id):
 
         return {}, 200
     elif request.method == 'DELETE':
-        query_response = run_update_query(
+        query_response = run_delete_query(
             f"DELETE FROM packages WHERE id='{id}'")
 
         return {}, 200
@@ -64,30 +64,52 @@ def get_package_rating():
     pass
 
 
-@app.route('/package/byName/<string:name>', methods=['GET'])
+@app.route('/package/byName/<string:name>', methods=['GET', 'DELETE'])
 def get_package_by_name():
-    pass
+    if request.method == 'GET':
+        pass
+    elif request.method == 'DELETE':
+        pass
 
 
 @app.route('/package', methods=['POST'])
 def packageCreate():
     if request.is_json:
-        package = request.get_json()
-        content = package['data']['content']
-        decoded_bytes = base64.b64decode(content)
+        package = request.json
+        data = package['data']
+        meta_data = package['metadata']
+        query_response = run_insert_query(
+            f'insert into packages(name,version,id,url,content) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}");')
+        # content = package['data']['Content']
+        # decoded_bytes = base64.b64decode(content)
 
-        import os
-        if not os.path.exists(package['metadata']['name']+'.zip'):
-            with open(package['metadata']['name']+'.zip', 'w').close():
-                pass
-        f = open(package['metadata']['name']+'.zip', 'wb')
-        f.write(decoded_bytes)
-        f.close()
+        # import os
+        # if not os.path.exists(package['metadata']['Name']+'.zip'):
+        #     with open(package['metadata']['Name']+'.zip', 'w').close():
+        #         pass
+        # f = open(package['metadata']['Name']+'.zip', 'wb')
+        # f.write(decoded_bytes)
+        # f.close()
 
         # upload zip file to database
 
         return package["metadata"], 201
     # return {"error": "Malformed request"}, 400
+
+
+@app.route('/packages', methods=['POST'])
+def get_packages():
+    pass
+
+
+@app.route('/reset', methods=['DELETE'])
+def registry_reset():
+    pass
+
+
+@app.route('/authenticate', methods=['PUT'])
+def authenticate():
+    pass
 
 
 if __name__ == "__main__":

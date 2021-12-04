@@ -1,0 +1,4 @@
+INFO:root:URL: https://github.com/Roserot/test-task-app
+
+INFO:root:Repository Owner: Roserot  Module: test-task-app
+WARNING:root:bad credentials
