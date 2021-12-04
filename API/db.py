@@ -58,9 +58,25 @@ def run_update_query(query):
         conn.commit()
         result = cursor.fetchall()
 
+        conn.close()
+
         if result:
             current_msg = result[0]
         else:
             return 'No response'
 
-    conn.close()
+
+def run_delete_query(query):
+    conn = open_connection()
+
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        conn.commit()
+        result = cursor.fetchall()
+
+        conn.close()
+
+        if result:
+            current_msg = result[0]
+        else:
+            return 'No response'

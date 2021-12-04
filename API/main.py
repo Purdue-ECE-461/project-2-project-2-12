@@ -10,21 +10,6 @@ cors = CORS(app)
 app.config["DEBUG"] = True
 
 
-# @app.route('/')
-# def main():
-#     # When deployed to App Engine, the `GAE_ENV` environment variable will be
-#     # set to `standard`
-
-# with cnx.cursor() as cursor:
-#     cursor.execute('select * from packages;')
-#     result = cursor.fetchall()
-#     current_msg = result[0][0]
-# cnx.close()
-
-#     return str(current_msg)
-# # [END gae_python37_cloudsql_mysql]
-
-
 @app.route('/getPackages', methods=['GET'])
 @cross_origin()
 def home():
@@ -40,53 +25,69 @@ def home():
     }
 
 
-@app.route('/package/<string:id>', methods=['GET', 'POST'])
+@app.route('/package/<string:id>', methods=['GET', 'PUT', 'DELETE'])
 def getPackageById(id):
     if request.method == 'GET':
         query_response = run_select_query(
             f'select * from packages where id="{id}"')
 
-        return {
-            "metadata": {
-                "Name": query_response[0],
-                "Version": query_response[1],
-                "ID": query_response[2]
-            },
-            "data": {
-                "Content": query_response[4],
-                "URL": query_response[3],
-                "JSProgram": "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}\n"
+        if (query_response != 'No response'):
+            return {
+                "metadata": {
+                    "Name": query_response[0],
+                    "Version": query_response[1],
+                    "ID": query_response[2]
+                },
+                "data": {
+                    "Content": query_response[4],
+                    "URL": query_response[3],
+                    "JSProgram": "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}\n"
+                }
             }
-        }
-    elif request.method == 'POST':
+        else:
+            return {}, 404
+    elif request.method == 'PUT':
         json_data = request.json
-        print(json_data['data']['Content'])
-        print(
-            f"UPDATE packages SET content=\'{json_data['data']['Content']}\' WHERE id=\'{id}\'")
         query_response = run_update_query(
             f"UPDATE packages SET content=\'{json_data['data']['Content']}\' WHERE id=\'{id}\'")
 
         return {}, 200
+    elif request.method == 'DELETE':
+        query_response = run_update_query(
+            f"DELETE FROM packages WHERE id='{id}'")
 
-    @app.route('/package', methods=['POST'])
-    def packageCreate():
-        if request.is_json:
-            package = request.get_json()
-            content = package['data']['content']
-            decoded_bytes = base64.b64decode(content)
+        return {}, 200
 
-            import os
-            if not os.path.exists(package['metadata']['name']+'.zip'):
-                with open(package['metadata']['name']+'.zip', 'w').close():
-                    pass
-            f = open(package['metadata']['name']+'.zip', 'wb')
-            f.write(decoded_bytes)
-            f.close()
 
-            # upload zip file to database
+@app.route('/package/<string:id>/rate', methods=['GET'])
+def get_package_rating():
+    pass
 
-            return package["metadata"], 201
-        # return {"error": "Malformed request"}, 400
+
+@app.route('/package/byName/<string:name>', methods=['GET'])
+def get_package_by_name():
+    pass
+
+
+@app.route('/package', methods=['POST'])
+def packageCreate():
+    if request.is_json:
+        package = request.get_json()
+        content = package['data']['content']
+        decoded_bytes = base64.b64decode(content)
+
+        import os
+        if not os.path.exists(package['metadata']['name']+'.zip'):
+            with open(package['metadata']['name']+'.zip', 'w').close():
+                pass
+        f = open(package['metadata']['name']+'.zip', 'wb')
+        f.write(decoded_bytes)
+        f.close()
+
+        # upload zip file to database
+
+        return package["metadata"], 201
+    # return {"error": "Malformed request"}, 400
 
 
 if __name__ == "__main__":
