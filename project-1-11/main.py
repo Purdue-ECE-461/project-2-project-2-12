@@ -1,3 +1,4 @@
+import json
 from urllib.parse import urlparse
 from metrics import *
 import os
@@ -31,17 +32,14 @@ def urlParse(url):
     module = ownerModule[2].strip('\n')
     return owner, module
 
-
-if __name__ == "__main__":
+def main(input):
     npm_flag = 'www.npmjs.com'
     printOrder = []
     printStrings = {}
     levels = {'0': logging.CRITICAL, '1': logging.INFO, '2': logging.DEBUG}
     logging.basicConfig(filename=os.getenv('LOG_FILE'), level=levels[os.getenv('LOG_LEVEL')], filemode="w")
-    if len(sys.argv) < 2:
-        logging.info("DEBUG - Wrong number of inputs!")
 
-    with open(sys.argv[1]) as f:
+    with open(input) as f:
         lines = f.readlines()
     for line in lines:
         line_copy = line
@@ -69,9 +67,21 @@ if __name__ == "__main__":
         logging.info("Metric scores succesfully calculated.")
         line = line.strip("\n")
         printOrder.append(total_score)
-        printStrings[
-            total_score] = f"{line} {round(total_score, 2)} {round(rmp_score, 2)} {round(cor_score, 2)} {round(bus_score, 2)} {round(rsp_score, 2)} {round(license_score, 2)} {round(depend_score, 2)}"
+        printStrings[line] = f"{total_score}"
+        # printStrings[
+        #     total_score] = f"{line} {round(total_score, 2)} {round(rmp_score, 2)} {round(cor_score, 2)} {round(bus_score, 2)} {round(rsp_score, 2)} {round(license_score, 2)} {round(depend_score, 2)}"
 
-    printOrder.sort()
-    for i in printOrder[::-1]:
-        print(printStrings[i])
+    return json.dumps(printStrings)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        logging.info("DEBUG - Wrong number of inputs!")
+        logging.info("System exiting...")
+        sys.exit(1)
+    json = main(sys.argv[1])
+    print(json)
+    # print(printStrings)
+    # printOrder.sort()
+    # for i in printOrder[::-1]:
+    #     print(printStrings[i])

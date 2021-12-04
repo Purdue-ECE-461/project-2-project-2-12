@@ -14,8 +14,11 @@ def getResponsiveness(owner, module):
     issues = getIssues(owner, module)
     #   Calculating the Issue close ratio
     open_issues = repo['open_issues']
-    closed_issues = getNumOfIssues(owner, module)
-    score = 100 - (100 / ((closed_issues + open_issues) / open_issues))
+    if open_issues == 0:
+        score = 1
+    else:
+        closed_issues = getNumOfIssues(owner, module)
+        score = 100 - (100 / ((closed_issues + open_issues) / open_issues))
     #   Adjust score based on the number of subscribers (More subscribes, better responsiveness)
     sub_count = repo['subscribers_count']
     if sub_count < 999:
@@ -45,10 +48,13 @@ def getRampUpTime(owner, module):
         score += 4
 
     # if repo has many watchers increase the score
-    score += 3 * pow(9000, -1000.0 / repo['watchers_count'])
-
+    watchers_count = repo['watchers_count']
+    if watchers_count != 0:
+        score += 3 * pow(9000, -1000.0 / repo['watchers_count'])
     # if repo has many forks increase the score
-    score += 3 * pow(2, -1000.0 / repo['forks_count'])
+    forks_count = repo['forks_count']
+    if forks_count != 0:
+        score += 3 * pow(2, -1000.0 / repo['forks_count'])
     return score / 10
 
 

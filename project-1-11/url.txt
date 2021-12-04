@@ -1,8 +1,7 @@
+https://www.npmjs.com/package/lodash
 https://www.npmjs.com/package/chalk
 https://github.com/Roserot/test-task-app
 https://github.com/facebook/react
 https://github.com/expressjs/express
-https://www.npmjs.com/package/chalk
 https://www.npmjs.com/package/request
 https://www.npmjs.com/package/commander
-https://www.npmjs.com/package/lodash
