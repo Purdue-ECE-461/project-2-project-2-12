@@ -32,14 +32,12 @@ def urlParse(url):
     module = ownerModule[2].strip('\n')
     return owner, module
 
-def main(numArgs, input):
+def main(input):
     npm_flag = 'www.npmjs.com'
     printOrder = []
     printStrings = {}
     levels = {'0': logging.CRITICAL, '1': logging.INFO, '2': logging.DEBUG}
     logging.basicConfig(filename=os.getenv('LOG_FILE'), level=levels[os.getenv('LOG_LEVEL')], filemode="w")
-    if numArgs < 2:
-        logging.info("DEBUG - Wrong number of inputs!")
 
     with open(input) as f:
         lines = f.readlines()
@@ -77,7 +75,11 @@ def main(numArgs, input):
 
 
 if __name__ == "__main__":
-    json = main(len(sys.argv), sys.argv[1])
+    if len(sys.argv) < 2:
+        logging.info("DEBUG - Wrong number of inputs!")
+        logging.info("System exiting...")
+        sys.exit(1)
+    json = main(sys.argv[1])
     print(json)
     # print(printStrings)
     # printOrder.sort()
