@@ -1,4 +1,4 @@
-INFO:root:URL: https://github.com/Roserot/test-task-app
+INFO:root:URL: https://www.npmjs.com/package/lodash
 
-INFO:root:Repository Owner: Roserot  Module: test-task-app
+INFO:root:Repository Owner: lodash  Module: lodash
 WARNING:root:bad credentials

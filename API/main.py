@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from db import *
 import base64
+from datetime import datetime
 
 
 # initialising the flask app
@@ -65,21 +66,31 @@ def get_package_rating():
 
 
 @app.route('/package/byName/<string:name>', methods=['GET', 'DELETE'])
-def get_package_by_name():
+def get_package_by_name(name):
     if request.method == 'GET':
-        pass
+        query_response = run_select_query(
+            f"select * from packages where name='{name}'")
+        print(query_response)
     elif request.method == 'DELETE':
         pass
+
+    return {}
 
 
 @app.route('/package', methods=['POST'])
 def packageCreate():
     if request.is_json:
+
         package = request.json
         data = package['data']
         meta_data = package['metadata']
-        query_response = run_insert_query(
-            f'insert into packages(name,version,id,url,content) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}");')
+
+        if 'Content' in data:
+            query_response = run_insert_query(
+                f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}", "CREATE", "{datetime.now()}"");')
+        elif 'URL' in data:
+            # This is being called
+            pass
         # content = package['data']['Content']
         # decoded_bytes = base64.b64decode(content)
 

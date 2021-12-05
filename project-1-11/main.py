@@ -32,12 +32,14 @@ def urlParse(url):
     module = ownerModule[2].strip('\n')
     return owner, module
 
+
 def main(input):
     npm_flag = 'www.npmjs.com'
     printOrder = []
     printStrings = {}
     levels = {'0': logging.CRITICAL, '1': logging.INFO, '2': logging.DEBUG}
-    logging.basicConfig(filename=os.getenv('LOG_FILE'), level=levels[os.getenv('LOG_LEVEL')], filemode="w")
+    logging.basicConfig(filename=os.getenv('LOG_FILE'),
+                        level=levels[os.getenv('LOG_LEVEL')], filemode="w")
 
     with open(input) as f:
         lines = f.readlines()
@@ -63,7 +65,8 @@ def main(input):
         bus_score = getBusFactor(owner, module)
         license_score = getLicenseComp(owner, module)
         depend_score = getDependencyScore(owner, module)
-        total_score = getTotalScore(rsp_score, rmp_score, cor_score, bus_score, license_score, depend_score)
+        total_score = getTotalScore(
+            rsp_score, rmp_score, cor_score, bus_score, license_score, depend_score)
         logging.info("Metric scores succesfully calculated.")
         line = line.strip("\n")
         printOrder.append(total_score)
