@@ -3,7 +3,7 @@ from flask_cors import CORS, cross_origin
 from db import *
 import base64
 from datetime import datetime
-
+from Scorer.main import Package
 
 # initialising the flask app
 app = Flask(__name__)
@@ -31,7 +31,7 @@ def getPackageById(id):
     if request.method == 'GET':
         query_response = run_select_query(
             f'select * from packages where id="{id}"')
-        print(query_response)
+
         if (query_response != 'No response'):
             return {
                 "metadata": {
@@ -61,8 +61,21 @@ def getPackageById(id):
 
 
 @app.route('/package/<string:id>/rate', methods=['GET'])
-def get_package_rating():
-    pass
+def get_package_rating(id):
+    query_response = run_select_query(
+        f'select url from packages where id="{id}"')
+
+    url = query_response[0]
+    pkg = Package(url)
+
+    return {
+        "RampUp": pkg.rampup,
+        "Correctness": pkg.correctness,
+        "BusFactor": pkg.bus_factor,
+        "ResponsiveMaintainer": pkg.responsiveness,
+        "LicenseScore": pkg.license_score,
+        "GoodPinningPractice": pkg.good_pinning_practice
+    }
 
 
 @app.route('/package/byName/<string:name>', methods=['GET', 'DELETE'])
