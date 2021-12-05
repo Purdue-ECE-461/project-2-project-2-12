@@ -4,6 +4,7 @@ from db import *
 import base64
 from datetime import datetime
 from Scorer.main import Package
+import semver
 
 # initialising the flask app
 app = Flask(__name__)
@@ -30,7 +31,7 @@ def home():
 def getPackageById(id):
     if request.method == 'GET':
         query_response = run_select_query(
-            f'select * from packages where id="{id}"')
+            f'select * from packages where id="{id}"')[0]
 
         if (query_response != 'No response'):
             return {
@@ -65,7 +66,7 @@ def get_package_rating(id):
     query_response = run_select_query(
         f'select url from packages where id="{id}"')
 
-    url = query_response[0]
+    url = query_response[0][0]
     pkg = Package(url)
 
     return {
@@ -123,7 +124,9 @@ def packageCreate():
             query_response = run_insert_query(
                 f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}", "CREATE", "{datetime.now()}"");')
         elif 'URL' in data:
-            # This is being called
+            url = data['url']
+            pkg = Package(url)
+
             pass
         # content = package['data']['Content']
         # decoded_bytes = base64.b64decode(content)
@@ -144,7 +147,42 @@ def packageCreate():
 
 @app.route('/packages', methods=['POST'])
 def get_packages():
-    pass
+    packages = request.json
+    out_arr = []
+    for package_info in packages:
+        pkg_version = package_info['Version']
+        pkg_name = package_info['Name']
+        query_packages = run_select_query(
+            f"SELECT name, version, id from packages WHERE name='{pkg_name}'")
+
+        for pkg in query_packages:
+            print(pkg)
+            if '-' in pkg_version:
+                # Version range
+                lower_version, higher_version = pkg_version.split('-')
+
+                within_range = (semver.compare(str(pkg[1]), str(lower_version)) == -1) and (
+                    semver.compare(str(higher_version), str(pkg[1])) == 1)
+
+                is_range = (semver.compare(str(pkg[1]), str(lower_version)) == 0) or (
+                    semver.compare(str(higher_version), str(pkg[1])) == 0)
+
+                if within_range or is_range:
+                    out_arr.append({
+                        "Name": pkg[0],
+                        "Version": pkg[1],
+                        "ID": pkg[2]
+                    })
+            else:
+                # Only one version
+                if pkg_version == pkg[1]:
+                    out_arr.append({
+                        "Name": pkg[0],
+                        "Version": pkg[1],
+                        "ID": pkg[2]
+                    })
+
+    return {"result": out_arr}
 
 
 @app.route('/reset', methods=['DELETE'])

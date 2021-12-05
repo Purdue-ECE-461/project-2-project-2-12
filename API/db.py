@@ -41,11 +41,7 @@ def run_select_query(query):
         result = cursor.fetchall()
 
         if result:
-            print(len(result))
-            if len(result) == 1:
-                current_msg = result[0]
-            else:
-                current_msg = result
+            current_msg = result
         else:
             return 'No response'
 
