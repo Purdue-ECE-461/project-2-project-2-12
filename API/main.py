@@ -31,7 +31,7 @@ def getPackageById(id):
     if request.method == 'GET':
         query_response = run_select_query(
             f'select * from packages where id="{id}"')
-
+        print(query_response)
         if (query_response != 'No response'):
             return {
                 "metadata": {
@@ -70,11 +70,32 @@ def get_package_by_name(name):
     if request.method == 'GET':
         query_response = run_select_query(
             f"select * from packages where name='{name}'")
-        print(query_response)
-    elif request.method == 'DELETE':
-        pass
 
-    return {}
+        resp_arr = []
+        for package in query_response:
+            package_resp = {
+                "User": {
+                    "name": "EMPTY FOR NOW NEED TO FIX",
+                    "isAdmin": True
+                },
+                "Date": package[6],
+                "PackageMetadata": {
+                    "Name": package[0],
+                    "Version": package[1],
+                    "ID": package[2]
+                },
+                "Action": package[5]
+            }
+
+            resp_arr.append(package_resp)
+
+        return {'result': resp_arr}, 200
+
+    elif request.method == 'DELETE':
+        query_response = run_delete_query(
+            f"delete from packages where name='{name}'")
+
+        return {}, 200
 
 
 @app.route('/package', methods=['POST'])
