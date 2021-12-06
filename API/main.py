@@ -161,8 +161,8 @@ def get_packages():
                 # Version range
                 lower_version, higher_version = pkg_version.split('-')
 
-                within_range = (semver.compare(str(pkg[1]), str(lower_version)) == -1) and (
-                    semver.compare(str(higher_version), str(pkg[1])) == 1)
+                within_range = (semver.compare(str(pkg[1]), str(lower_version)) == 1) and (
+                    semver.compare(str(pkg[1]), str(higher_version)) == -1)
 
                 is_range = (semver.compare(str(pkg[1]), str(lower_version)) == 0) or (
                     semver.compare(str(higher_version), str(pkg[1])) == 0)
