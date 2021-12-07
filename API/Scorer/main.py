@@ -30,6 +30,7 @@ class Package:
         self.responsiveness = getResponsiveness(owner, module)
         self.license_score = getLicenseComp(owner, module)
         self.good_pinning_practice = getDependencyScore(owner, module)
+        self.total_score = getTotalScore(self.responsiveness, self.rampup, self.correctness, self.bus_factor, self.license_score, self.good_pinning_practice)
 
     def getNpmRepo(self, url):
         page = urllib.request.urlopen(url)
