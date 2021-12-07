@@ -5,6 +5,7 @@ import base64
 from datetime import datetime
 from Scorer.main import Package
 import semver
+import requests
 
 # initialising the flask app
 app = Flask(__name__)
@@ -115,7 +116,6 @@ def get_package_by_name(name):
 @app.route('/package', methods=['POST'])
 def packageCreate():
     if request.is_json:
-
         package = request.json
         data = package['data']
         meta_data = package['metadata']
@@ -123,27 +123,41 @@ def packageCreate():
         if 'Content' in data:
             query_response = run_insert_query(
                 f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}", "CREATE", "{datetime.now()}"");')
+            return package["metadata"], 201
         elif 'URL' in data:
             url = data['url']
             pkg = Package(url)
+            score = pkg.total_score
 
-            pass
-        # content = package['data']['Content']
-        # decoded_bytes = base64.b64decode(content)
+            if score >= 0.5:
+                """ Download the Github Repo as a .zip file """
+                headers = {}
+                branch = ''
+                ext = 'zip'
+                owner, repo = pkg.urlParse(pkg.url)
+                url = f'https://api.github.com/repos/{owner}/{repo}/{ext}ball/{branch}'
 
-        # import os
-        # if not os.path.exists(package['metadata']['Name']+'.zip'):
-        #     with open(package['metadata']['Name']+'.zip', 'w').close():
-        #         pass
-        # f = open(package['metadata']['Name']+'.zip', 'wb')
-        # f.write(decoded_bytes)
-        # f.close()
+                r = requests.get(url, headers=headers)
+                if r.status_code == 200:
+                    with open(f'repo.{ext}', 'wb') as f:
+                        f.write(r.content)
 
-        # upload zip file to database
+                """ Encode the .zip file in base64 """
+                with open("repo.zip", "rb") as f:
+                    bytes = f.read()
+                    content = base64.b64encode(bytes)
 
-        return package["metadata"], 201
-    # return {"error": "Malformed request"}, 400
+                """ Update package's content field with base64 encoding and upload to database """
+                data["Content"] = content
+                query_response = run_insert_query(
+                    f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", '
+                    f'"{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}", "INGEST", "{datetime.now()}"");')
 
+                return meta_data, 201
+            else:
+                return {"warning": "Package is not a trustworthy module"}
+        else:
+            return {"Error": "Malformed request."}, 400
 
 @app.route('/packages', methods=['POST'])
 def get_packages():
@@ -162,10 +176,10 @@ def get_packages():
                 lower_version, higher_version = pkg_version.split('-')
 
                 within_range = (semver.compare(str(pkg[1]), str(lower_version)) == 1) and (
-                    semver.compare(str(pkg[1]), str(higher_version)) == -1)
+                        semver.compare(str(pkg[1]), str(higher_version)) == -1)
 
                 is_range = (semver.compare(str(pkg[1]), str(lower_version)) == 0) or (
-                    semver.compare(str(higher_version), str(pkg[1])) == 0)
+                        semver.compare(str(higher_version), str(pkg[1])) == 0)
 
                 if within_range or is_range:
                     out_arr.append({
@@ -196,6 +210,5 @@ def authenticate():
 
 
 if __name__ == "__main__":
-
     # 127.0.0.1
     app.run(host='127.0.0.1', port=8080, debug=True)
