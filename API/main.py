@@ -1,10 +1,13 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS, cross_origin
 from db import *
 import base64
 from datetime import datetime
 from Scorer.main import Package
 import semver
+import jwt
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # initialising the flask app
 app = Flask(__name__)
@@ -187,12 +190,38 @@ def get_packages():
 
 @app.route('/reset', methods=['DELETE'])
 def registry_reset():
-    pass
+    query_results = run_delete_query(f"delete from packages;")
 
 
 @app.route('/authenticate', methods=['PUT'])
 def authenticate():
     pass
+
+# signup route
+
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    # creates a dictionary of the form data
+    data = request.form
+
+    # gets name, email and password
+    name = data.get('name')
+    password = data.get('password')
+
+    # checking for existing user
+    query_results = run_select_query(
+        f"SELECT name FROM users WHERE name={name};")
+
+    if query_results == 'No response':
+        # database ORM object
+        query_results = run_insert_query(
+            f"INSERT INTO users(name,password,isAdmin) values('{name}', '{password}', 0)")
+
+        return make_response('Successfully registered.', 201)
+    else:
+        # returns 202 if user already exists
+        return make_response('User already exists. Please Log in.', 202)
 
 
 if __name__ == "__main__":
