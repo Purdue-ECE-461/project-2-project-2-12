@@ -1,3 +1,4 @@
+from os import name
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS, cross_origin
 from db import *
@@ -9,11 +10,13 @@ import jwt
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
+from datetime import datetime, timedelta
 
 # initialising the flask app
 app = Flask(__name__)
 cors = CORS(app)
 app.config["DEBUG"] = True
+app.config['SECRET_KEY'] = 'whatisasecretkeyonemayask'
 
 
 @app.route('/getPackages', methods=['GET'])
@@ -29,6 +32,32 @@ def home():
         7: {'name': 'Test6', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
         8: {'name': 'Test7', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
     }
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        # jwt is passed in the request header
+        if 'X-Authorization' in request.headers:
+            token = request.headers['x-access-token']
+        # return 401 if token is not passed
+        if not token:
+            return jsonify({'message': 'Token is missing !!'}), 401
+
+        try:
+            # decoding the payload to fetch the stored details
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = run_select_query(
+                f"SELECT name FROM users WHERE name='{name}';")[0]
+        except:
+            return jsonify({
+                'message': 'Token is invalid !!'
+            }), 401
+        # returns the current logged in users contex to the routes
+        return f(current_user, *args, **kwargs)
+
+    return decorated
 
 
 @app.route('/package/<string:id>', methods=['GET', 'PUT', 'DELETE'])
@@ -84,6 +113,7 @@ def get_package_rating(id):
 
 
 @app.route('/package/byName/<string:name>', methods=['GET', 'DELETE'])
+@token_required
 def get_package_by_name(name):
     if request.method == 'GET':
         query_response = run_select_query(
@@ -128,7 +158,7 @@ def packageCreate():
                 f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}", "CREATE", "{datetime.now()}"");')
             return package["metadata"], 201
         elif 'URL' in data:
-            url = data['url']
+            url = data['URL']
             pkg = Package(url)
             score = pkg.total_score
 
@@ -153,8 +183,7 @@ def packageCreate():
                 """ Update package's content field with base64 encoding and upload to database """
                 data["Content"] = content
                 query_response = run_insert_query(
-                    f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", '
-                    f'"{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}", "INGEST", "{datetime.now()}"");')
+                    f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "{url}", "{data["Content"]}", "INGEST", "{datetime.now()}");')
 
                 return meta_data, 201
             else:
@@ -210,25 +239,64 @@ def registry_reset():
 
 @app.route('/authenticate', methods=['PUT'])
 def authenticate():
-    pass
+    # creates dictionary of form data
+    auth = request.json
 
-# signup route
+    if not auth or not auth['User']['name'] or not auth['Secret']['password']:
+        # returns 401 if any email or / and password is missing
+        return make_response(
+            'Could not verify',
+            401,
+            {'WWW-Authenticate': 'Basic realm ="Login required !!"'}
+        )
 
-
-@app.route('/signup', methods=['POST'])
-def signup():
-    # creates a dictionary of the form data
-    data = request.form
-
-    # gets name, email and password
-    name = data.get('name')
-    password = data.get('password')
-
-    # checking for existing user
     query_results = run_select_query(
-        f"SELECT name FROM users WHERE name={name};")
+        f"SELECT name, password from users where name='{auth['User']['name']}'")
 
     if query_results == 'No response':
+
+        return make_response(
+            'Could not verify',
+            401,
+            {'WWW-Authenticate': 'Basic realm ="User does not exist !!"'}
+        )
+    else:
+        user = query_results[0]
+
+    print(user[1])
+    print(auth["Secret"]["password"])
+
+    if check_password_hash(user[1], auth['Secret']['password']):
+        # generates the JWT Token
+        token = jwt.encode({
+            'public_id': user[0],
+            'exp': datetime.utcnow() + timedelta(minutes=30)
+        }, app.config['SECRET_KEY'])
+
+        return make_response(jsonify({'token': token.decode('UTF-8')}), 201)
+    # returns 403 if password is wrong
+
+    return make_response(
+        'Could not verify',
+        403,
+        {'WWW-Authenticate': 'Basic realm ="Wrong Password !!"'}
+    )
+
+
+@app.route('/adduser', methods=['POST'])
+def add_user():
+    # creates a dictionary of the form data
+    data = request.json
+
+    # gets name, email and password
+    name = data['name']
+    password = data['password']
+
+    # checking for existing user
+    user = run_select_query(
+        f"SELECT name FROM users WHERE name='{name}';")
+
+    if user == 'No response':
         # database ORM object
         query_results = run_insert_query(
             f"INSERT INTO users(name,password,isAdmin) values('{name}', '{password}', 0)")

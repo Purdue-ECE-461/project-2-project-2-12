@@ -2,11 +2,9 @@ import sys
 import requests
 from random import *
 import os
-from dotenv import load_dotenv
 import logging
 from bs4 import BeautifulSoup
 import re
-load_dotenv()
 
 # Put your GITHUB_TOKEN to the variable in the .env file
 header = {
@@ -14,8 +12,10 @@ header = {
     'Authorization': f"token {os.getenv('GITHUB_TOKEN')}"
 }
 
+
 def getDependencies(owner, module):
-    url = 'https://github.com/{}/network/dependencies'.format(owner + '/' + module)
+    url = 'https://github.com/{}/network/dependencies'.format(
+        owner + '/' + module)
 
     r = requests.get(url, headers=header)
     soup = BeautifulSoup(r.content, "html.parser")
@@ -60,7 +60,8 @@ def getIssues(owner, module):  # Returns Issues directory
 def getNumOfIssues(owner, module):  # Returns number of closed issues
     numOfIssues = 1
     response = requests.get(
-        url='https://api.github.com/search/issues?q=repo:' + owner + '/' + module + '+type:issue+state:closed',
+        url='https://api.github.com/search/issues?q=repo:' +
+            owner + '/' + module + '+type:issue+state:closed',
         headers=header).json()
     numOfIssues = response['total_count']
     if (len(response)) == 0:
