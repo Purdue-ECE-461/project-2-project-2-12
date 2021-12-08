@@ -1,3 +1,5 @@
+# this file uses pytest to test very basic api functions
+
 import requests
 
 def test_getPackages_url_status():
