@@ -1,5 +1,7 @@
 from os import name
+from sys import version
 from flask import Flask, request, jsonify, make_response
+from flask.helpers import url_for
 from flask_cors import CORS, cross_origin
 from db import *
 import base64
@@ -11,12 +13,38 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 from datetime import datetime, timedelta
+from flask_sqlalchemy import SQLAlchemy
 
 # initialising the flask app
 app = Flask(__name__)
 cors = CORS(app)
 app.config["DEBUG"] = True
 app.config['SECRET_KEY'] = 'whatisasecretkeyonemayask'
+
+db = SQLAlchemy(app)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{}:{}@/{}?unix_socket=/cloudsql/{}".format(
+#     'prembhanderi', 'justguess', 'mydatabase', 'ece-461-pyapi:us-east1:project2-mysql-database')
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://prembhanderi:justguess@localhost:3306/mydatabase"
+
+
+class UserModel(db.Model):
+    __tablename__ = 'users'
+    name = db.Column(db.String(255), primary_key=True, index=True)
+    password = db.Column(db.String(255))
+    isAdmin = db.Column(db.Boolean)
+
+
+class PackageModel(db.Model):
+    __tablename__ = 'packages'
+    name = db.Column(db.String(255))
+    version = db.Column(db.String(255))
+    id = db.Column(db.String(255), primary_key=True)
+    url = db.Column(db.String(255))
+    content = db.Column(db.Text)
+    action = db.Column(db.String(255))
+    actionTime = db.Column(db.String(255))
 
 
 @app.route('/getPackages', methods=['GET'])
@@ -40,7 +68,7 @@ def token_required(f):
         token = None
         # jwt is passed in the request header
         if 'X-Authorization' in request.headers:
-            token = request.headers['x-access-token']
+            token = request.headers['X-Authorization']
         # return 401 if token is not passed
         if not token:
             return jsonify({'message': 'Token is missing !!'}), 401
@@ -48,14 +76,15 @@ def token_required(f):
         try:
             # decoding the payload to fetch the stored details
             data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = run_select_query(
-                f"SELECT name FROM users WHERE name='{name}';")[0]
+
+            curr_user = UserModel.query.filter_by(name=data['name']).first()
         except:
+
             return jsonify({
                 'message': 'Token is invalid !!'
             }), 401
         # returns the current logged in users contex to the routes
-        return f(current_user, *args, **kwargs)
+        return f(curr_user, *args, **kwargs)
 
     return decorated
 
@@ -63,19 +92,18 @@ def token_required(f):
 @app.route('/package/<string:id>', methods=['GET', 'PUT', 'DELETE'])
 def getPackageById(id):
     if request.method == 'GET':
-        query_response = run_select_query(
-            f'select * from packages where id="{id}"')[0]
+        package = PackageModel.query.filter_by(id=id).first()
 
-        if (query_response != 'No response'):
+        if (package):
             return {
                 "metadata": {
-                    "Name": query_response[0],
-                    "Version": query_response[1],
-                    "ID": query_response[2]
+                    "Name": package.name,
+                    "Version": package.version,
+                    "ID": package.id
                 },
                 "data": {
-                    "Content": query_response[4],
-                    "URL": query_response[3],
+                    "Content": package.content,
+                    "URL": package.url,
                     "JSProgram": "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}\n"
                 }
             }
@@ -83,24 +111,27 @@ def getPackageById(id):
             return {}, 404
     elif request.method == 'PUT':
         json_data = request.json
-        query_response = run_update_query(
-            f"UPDATE packages SET content=\'{json_data['data']['Content']}\' WHERE id=\'{id}\'")
+
+        package = PackageModel.query.filter_by(id=id).first()
+        package.content = json_data['data']['Content']
+        db.session.commit()
 
         return {}, 200
     elif request.method == 'DELETE':
-        query_response = run_delete_query(
-            f"DELETE FROM packages WHERE id='{id}'")
+        PackageModel.query.filter_by(id=id).delete()
+        db.session.commit()
 
         return {}, 200
 
 
 @app.route('/package/<string:id>/rate', methods=['GET'])
 def get_package_rating(id):
-    query_response = run_select_query(
-        f'select url from packages where id="{id}"')
+    package = PackageModel.query.filter_by(id=id).first()
 
-    url = query_response[0][0]
-    pkg = Package(url)
+    if package:
+        pkg = Package(package.url)
+    else:
+        return make_response("No such Package", 400)
 
     return {
         "RampUp": pkg.rampup,
@@ -114,25 +145,24 @@ def get_package_rating(id):
 
 @app.route('/package/byName/<string:name>', methods=['GET', 'DELETE'])
 @token_required
-def get_package_by_name(name):
+def get_package_by_name(curr_user, name):
     if request.method == 'GET':
-        query_response = run_select_query(
-            f"select * from packages where name='{name}'")
+        packages = PackageModel.query.filter_by(name=name).all()
 
         resp_arr = []
-        for package in query_response:
+        for package in packages:
             package_resp = {
                 "User": {
-                    "name": "EMPTY FOR NOW NEED TO FIX",
-                    "isAdmin": True
+                    "name": curr_user.name,
+                    "isAdmin": True if curr_user.isAdmin else False
                 },
-                "Date": package[6],
+                "Date": package.actionTime,
                 "PackageMetadata": {
-                    "Name": package[0],
-                    "Version": package[1],
-                    "ID": package[2]
+                    "Name": package.name,
+                    "Version": package.version,
+                    "ID": package.id
                 },
-                "Action": package[5]
+                "Action": package.action
             }
 
             resp_arr.append(package_resp)
@@ -140,8 +170,8 @@ def get_package_by_name(name):
         return {'result': resp_arr}, 200
 
     elif request.method == 'DELETE':
-        query_response = run_delete_query(
-            f"delete from packages where name='{name}'")
+        PackageModel.query.filter_by(name=name).delete()
+        db.session.commit()
 
         return {}, 200
 
@@ -154,8 +184,11 @@ def packageCreate():
         meta_data = package['metadata']
 
         if 'Content' in data:
-            query_response = run_insert_query(
-                f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "", "{data["Content"]}", "CREATE", "{datetime.now()}"");')
+            package_insert = PackageModel(name=meta_data["Name"], version=meta_data["Version"], id=meta_data["ID"],
+                                          url="", content=data["Content"], action="CREATE", actionTime=str(datetime.now()))
+            db.session.add(package_insert)
+            db.session.commit()
+
             return package["metadata"], 201
         elif 'URL' in data:
             url = data['URL']
@@ -182,8 +215,10 @@ def packageCreate():
 
                 """ Update package's content field with base64 encoding and upload to database """
                 data["Content"] = content
-                query_response = run_insert_query(
-                    f'insert into packages(name,version,id,url,content,action,actionTime) values ("{meta_data["Name"]}", "{meta_data["Version"]}", "{meta_data["ID"]}", "{url}", "{data["Content"]}", "INGEST", "{datetime.now()}");')
+                package_insert = PackageModel(name=meta_data["Name"], version=meta_data["Version"], id=meta_data["ID"],
+                                              url="", content=data["Content"], action="INGEST", actionTime=str(datetime.now()))
+                db.session.add(package_insert)
+                db.session.commit()
 
                 return meta_data, 201
             else:
@@ -199,34 +234,33 @@ def get_packages():
     for package_info in packages:
         pkg_version = package_info['Version']
         pkg_name = package_info['Name']
-        query_packages = run_select_query(
-            f"SELECT name, version, id from packages WHERE name='{pkg_name}'")
 
-        for pkg in query_packages:
-            print(pkg)
+        packages = PackageModel.query.filter_by(name=pkg_name).all()
+
+        for pkg in packages:
             if '-' in pkg_version:
                 # Version range
                 lower_version, higher_version = pkg_version.split('-')
 
-                within_range = (semver.compare(str(pkg[1]), str(lower_version)) == 1) and (
-                    semver.compare(str(pkg[1]), str(higher_version)) == -1)
+                within_range = (semver.compare(pkg.version, str(lower_version)) == 1) and (
+                    semver.compare(pkg.version, str(higher_version)) == -1)
 
-                is_range = (semver.compare(str(pkg[1]), str(lower_version)) == 0) or (
-                    semver.compare(str(higher_version), str(pkg[1])) == 0)
+                is_range = (semver.compare(pkg.version, str(lower_version)) == 0) or (
+                    semver.compare(str(higher_version), pkg.version) == 0)
 
                 if within_range or is_range:
                     out_arr.append({
-                        "Name": pkg[0],
-                        "Version": pkg[1],
-                        "ID": pkg[2]
+                        "Name": pkg.name,
+                        "Version": pkg.version,
+                        "ID": pkg.id
                     })
             else:
                 # Only one version
-                if pkg_version == pkg[1]:
+                if pkg_version == pkg.version:
                     out_arr.append({
-                        "Name": pkg[0],
-                        "Version": pkg[1],
-                        "ID": pkg[2]
+                        "Name": pkg.name,
+                        "Version": pkg.version,
+                        "ID": pkg.id
                     })
 
     return {"result": out_arr}
@@ -234,7 +268,16 @@ def get_packages():
 
 @app.route('/reset', methods=['DELETE'])
 def registry_reset():
-    query_results = run_delete_query(f"delete from packages;")
+    packages = PackageModel.query.delete()
+    users = UserModel.query.delete()
+
+    defaultAdminUser = UserModel(
+        name='ece461defaultadmin', password=generate_password_hash('correcthorsebatterystaple123(!__+@**(A'), isAdmin=True)
+
+    db.session.add(defaultAdminUser)
+    db.session.commit()
+
+    return {}, 200
 
 
 @app.route('/authenticate', methods=['PUT'])
@@ -250,27 +293,20 @@ def authenticate():
             {'WWW-Authenticate': 'Basic realm ="Login required !!"'}
         )
 
-    query_results = run_select_query(
-        f"SELECT name, password from users where name='{auth['User']['name']}'")
+    user = UserModel.query.filter_by(name=auth['User']['name']).first()
 
-    if query_results == 'No response':
-
+    if not user:
         return make_response(
             'Could not verify',
             401,
             {'WWW-Authenticate': 'Basic realm ="User does not exist !!"'}
         )
-    else:
-        user = query_results[0]
 
-    print(user[1])
-    print(auth["Secret"]["password"])
-
-    if check_password_hash(user[1], auth['Secret']['password']):
+    if check_password_hash(user.password, auth['Secret']['password']):
         # generates the JWT Token
         token = jwt.encode({
-            'public_id': user[0],
-            'exp': datetime.utcnow() + timedelta(minutes=30)
+            'name': user.name,
+            'exp': datetime.utcnow() + timedelta(minutes=600)
         }, app.config['SECRET_KEY'])
 
         return make_response(jsonify({'token': token.decode('UTF-8')}), 201)
@@ -293,18 +329,19 @@ def add_user():
     password = data['password']
 
     # checking for existing user
-    user = run_select_query(
-        f"SELECT name FROM users WHERE name='{name}';")
+    user = UserModel.query.filter_by(name=name).first()
 
-    if user == 'No response':
-        # database ORM object
-        query_results = run_insert_query(
-            f"INSERT INTO users(name,password,isAdmin) values('{name}', '{password}', 0)")
-
-        return make_response('Successfully registered.', 201)
-    else:
+    if user:
         # returns 202 if user already exists
         return make_response('User already exists. Please Log in.', 202)
+    else:
+        # database ORM object
+        user = UserModel(name=name, password=generate_password_hash(
+            password), isAdmin=False)
+        db.session.add(user)
+        db.session.commit()
+
+        return make_response('Successfully registered.', 201)
 
 
 if __name__ == "__main__":
