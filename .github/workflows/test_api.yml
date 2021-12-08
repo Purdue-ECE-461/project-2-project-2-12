@@ -21,4 +21,4 @@ jobs:
         python3 -m pip install pytest
     - name: Run pytest
       run:
-        pytest test_api.py
+        pytest .github/workflows/test_api.py
