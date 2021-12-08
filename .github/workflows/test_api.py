@@ -1,7 +1,7 @@
 # this file uses pytest to test very basic api functions
 
 import requests
-from requests.models import HTTPBasicAuth
+from requests.structures import CaseInsensitiveDict
 
 # base_url = "https://ece-461-pyapi.ue.r.appspot.com/"
 base_url = "https://f790d989-aec9-4c93-b260-3e206f2559d4.mock.pstmn.io/"
@@ -21,6 +21,8 @@ def get_token():
     return response.text 
 
 def test_put_create_auth_token():
+    token = get_token()
+    headers = {'X-Authorization': token}
     url = base_url + "authenticate"
     raw_data = {"User": {
                     "name": "ece461defaultadminuser",
@@ -30,7 +32,7 @@ def test_put_create_auth_token():
                     "password": "correcthorsebatterystaple123(!__+@**(A"
                 }
     }
-    response = requests.put(url, data=raw_data)
+    response = requests.put(url, data=raw_data, headers=headers)
     assert response.status_code == 200
 
 def test_getPackages_url_status():
@@ -114,5 +116,3 @@ def test_del_reg_reset():
     headers = {'X-Authorization': token}
     response = requests.delete(url, headers=headers)
     assert response.status_code == 200
-
-# print(get_token())
