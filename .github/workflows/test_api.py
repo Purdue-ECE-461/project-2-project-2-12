@@ -7,7 +7,7 @@ def test_getPackages_url_status():
     assert response.status_code == 200
 
 def test_getPackages_json():
-    response = requests.get("https://ece-461-pyapi.ue.r.appspot.com/package/new")
+    response = requests.get("https://ece-461-pyapi.ue.r.appspot.com/package/1")
     assert response.json()
 
 def test_authenticate_status():
