@@ -1,9 +1,5 @@
-from os import name
-from sys import version
-from flask import Flask, request, jsonify, make_response
-from flask.helpers import url_for
-from flask_cors import CORS, cross_origin
-from db import *
+from flask import request, jsonify, make_response
+from flask_cors import cross_origin
 import base64
 from datetime import datetime
 from Scorer.main import Package
@@ -13,38 +9,8 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 from datetime import datetime, timedelta
-from flask_sqlalchemy import SQLAlchemy
-
-# initialising the flask app
-app = Flask(__name__)
-cors = CORS(app)
-app.config["DEBUG"] = True
-app.config['SECRET_KEY'] = 'whatisasecretkeyonemayask'
-
-db = SQLAlchemy(app)
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{}:{}@/{}?unix_socket=/cloudsql/{}".format(
-#     'prembhanderi', 'justguess', 'mydatabase', 'ece-461-pyapi:us-east1:project2-mysql-database')
-
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://prembhanderi:justguess@localhost:3306/mydatabase"
-
-
-class UserModel(db.Model):
-    __tablename__ = 'users'
-    name = db.Column(db.String(255), primary_key=True, index=True)
-    password = db.Column(db.String(255))
-    isAdmin = db.Column(db.Boolean)
-
-
-class PackageModel(db.Model):
-    __tablename__ = 'packages'
-    name = db.Column(db.String(255))
-    version = db.Column(db.String(255))
-    id = db.Column(db.String(255), primary_key=True)
-    url = db.Column(db.String(255))
-    content = db.Column(db.Text)
-    action = db.Column(db.String(255))
-    actionTime = db.Column(db.String(255))
+from models import app, db
+from models import UserModel, PackageModel
 
 
 @app.route('/getPackages', methods=['GET'])
@@ -90,7 +56,8 @@ def token_required(f):
 
 
 @app.route('/package/<string:id>', methods=['GET', 'PUT', 'DELETE'])
-def getPackageById(id):
+@token_required
+def getPackageById(curr_user, id):
     if request.method == 'GET':
         package = PackageModel.query.filter_by(id=id).first()
 
@@ -125,7 +92,8 @@ def getPackageById(id):
 
 
 @app.route('/package/<string:id>/rate', methods=['GET'])
-def get_package_rating(id):
+@token_required
+def get_package_rating(curr_user, id):
     package = PackageModel.query.filter_by(id=id).first()
 
     if package:
@@ -177,7 +145,8 @@ def get_package_by_name(curr_user, name):
 
 
 @app.route('/package', methods=['POST'])
-def packageCreate():
+@token_required
+def packageCreate(curr_user):
     if request.is_json:
         package = request.json
         data = package['data']
@@ -228,7 +197,8 @@ def packageCreate():
 
 
 @app.route('/packages', methods=['POST'])
-def get_packages():
+@token_required
+def get_packages(curr_user):
     packages = request.json
     out_arr = []
     for package_info in packages:
@@ -267,7 +237,8 @@ def get_packages():
 
 
 @app.route('/reset', methods=['DELETE'])
-def registry_reset():
+@token_required
+def registry_reset(curr_user):
     packages = PackageModel.query.delete()
     users = UserModel.query.delete()
 
