@@ -38,25 +38,3 @@ jobs:
         pylint -E project-1-11/main.py
         pylint -E project-1-11/metrics.py
         pylint -E project-1-11/request_handle.py
-
-name: test API 
-on:
-  pull_request:
-    branches:
-      - main
-jobs:
-  build:
-    runs-on: ubuntu-latest 
-    strategy:
-      matrix:
-        python-version: [3.9]
-    env:
-      GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
-      LOG_FILE: log.txt
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: 
-        pytest .github/workflows/test_api.py
