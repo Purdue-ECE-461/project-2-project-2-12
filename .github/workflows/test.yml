@@ -38,4 +38,3 @@ jobs:
         pylint -E project-1-11/main.py
         pylint -E project-1-11/metrics.py
         pylint -E project-1-11/request_handle.py
-
