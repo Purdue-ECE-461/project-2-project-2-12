@@ -19,4 +19,4 @@ jobs:
     - name: Install dependencies
       run: 
         python3 -m pip install pytest
-        pytest test_api.py
+        python3 pytest test_api.py
