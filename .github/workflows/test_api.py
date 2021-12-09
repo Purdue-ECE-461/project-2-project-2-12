@@ -106,6 +106,7 @@ def test_del_reg_reset():
     assert response.status_code == 200
 
 '''
+unused debugging functions
 token = get_token()
 token = 'bearer '+token
 print(token)
