@@ -2,7 +2,8 @@ beautifulsoup4==4.10.0
 Flask==2.0.2
 Flask_Cors==3.0.10
 gunicorn==19.3.0
-PyJWT==2.3.0
+Flask_SQLAlchemy==2.5.1
+PyJWT==1.7.1
 PyMySQL==1.0.2
 requests==2.26.0
 semver==2.13.0

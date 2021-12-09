@@ -7,5 +7,5 @@ env_variables:
   CLOUD_SQL_PASSWORD: justguess
   CLOUD_SQL_DATABASE_NAME: mydatabase
   CLOUD_SQL_CONNECTION_NAME: ece-461-pyapi:us-east1:project2-mysql-database
-  GITHUB_TOKEN: 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
+  GITHUB_TOKEN: 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
   # [END gae_python37_cloudsql_config]

@@ -1,3 +1,4 @@
+import re
 from flask import request, jsonify, make_response
 from flask_cors import cross_origin
 import base64
@@ -197,8 +198,10 @@ def packageCreate(curr_user):
 
 
 @app.route('/packages', methods=['POST'])
-@token_required
-def get_packages(curr_user):
+# @token_required
+def get_packages():
+    offset = int(request.args.get('offset', 1)[0])
+
     packages = request.json
     out_arr = []
     for package_info in packages:
@@ -206,6 +209,11 @@ def get_packages(curr_user):
         pkg_name = package_info['Name']
 
         packages = PackageModel.query.filter_by(name=pkg_name).all()
+        print(packages)
+
+        if offset > 1:
+            packages = packages[offset*10:(offset*10)+10]
+        
 
         for pkg in packages:
             if '-' in pkg_version:
@@ -291,28 +299,48 @@ def authenticate():
 
 
 @app.route('/adduser', methods=['POST'])
-def add_user():
-    # creates a dictionary of the form data
-    data = request.json
+@token_required
+def add_user(curr_user):
+    if not curr_user:
+        return make_response('Must be admin to create user', 401)
 
-    # gets name, email and password
-    name = data['name']
-    password = data['password']
+    if curr_user.isAdmin:
+        # creates a dictionary of the form data
+        data = request.json
 
-    # checking for existing user
-    user = UserModel.query.filter_by(name=name).first()
+        # gets name, email and password
+        name = data['name']
+        password = data['password']
 
-    if user:
-        # returns 202 if user already exists
-        return make_response('User already exists. Please Log in.', 202)
-    else:
-        # database ORM object
-        user = UserModel(name=name, password=generate_password_hash(
-            password), isAdmin=False)
-        db.session.add(user)
+        # checking for existing user
+        user = UserModel.query.filter_by(name=name).first()
+
+        if user:
+            # returns 202 if user already exists
+            return make_response('User already exists. Please Log in.', 202)
+        else:
+            # database ORM object
+            user = UserModel(name=name, password=generate_password_hash(
+                password), isAdmin=False)
+            db.session.add(user)
+            db.session.commit()
+
+    return make_response('Successfully registered.', 201)
+
+
+@app.route('/removeuser', methods=['POST'])
+@token_required
+def remove_user(curr_user):
+    name = request.json['name']
+
+    if name == curr_user.name:
+        user = UserModel.query.filter_by(name=name).first()
+        db.session.delete(user)
         db.session.commit()
 
-        return make_response('Successfully registered.', 201)
+        return make_response("Account deleted!", 200)
+    else:
+        return make_response("You can only delete your own account", 400)
 
 
 if __name__ == "__main__":
