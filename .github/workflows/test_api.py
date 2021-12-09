@@ -35,29 +35,37 @@ def test_post_package_create(): #3
     token = get_token()
     # token = 'bearer '+token
     url = base_url + "package"
-    # raw_data = '{ "metadata": { "Name": "express", "Version": "4.17.1", "ID": "express" }, "data": { "Content": test, "URL": "https://github.com/expressjs/express.git", "JSProgram": "if (process.argv.length === 7) {\nconsole.log("Success")\nprocess.exit(0)\n} else {\nconsole.log("Failed")\nprocess.exit(1)\n}\n" } }'
-    raw_data = '{"metadata": { "Name": "Underscore", "Version": "1.0.0", "ID": "underscore" }, "data": { "URL": "https://github.com/jashkenas/underscore", "JSProgram": "if (process.argv.length === 7) {\nconsole.log("\""Success"\"")\nprocess.exit(0)\n} else {\nconsole.log("\""Failed"\"")\nprocess.exit(1)\n}\n" } }'
+    raw_data = '{ "metadata": { "Name": Test, "Version": 4.7.1, "ID": test } }'
+    # raw_data = '{"metadata": { "Name": "Underscore", "Version": "1.0.0", "ID": "underscore" }, "data": { "URL": "https://github.com/jashkenas/underscore", "JSProgram": "if (process.argv.length === 7) {\nconsole.log("\""Success"\"")\nprocess.exit(0)\n} else {\nconsole.log("\""Failed"\"")\nprocess.exit(1)\n}\n" } }'
     headers = {'X-Authorization': token}
     response = requests.post(url, headers=headers, data=raw_data)
-    assert response.status_code == 200
+    assert response.status_code == 200 #500
 
 def test_get_package(): 
-    response = requests.get(base_url + "package/express")
+    token = get_token()
+    headers = {'X-Authorization': token}
+    response = requests.get(base_url + "package/express", headers=headers)
     assert response.status_code == 200
 
 def test_get_package_rate():
+    token = get_token()
+    headers = {'X-Authorization': token}
     url = base_url + "package/underscore/rate"
-    response = requests.get(url)
+    response = requests.get(url, headers=headers)
     assert response.headers.get('content-type').startswith('application/json')
 
 def test_get_package_byName():
+    token = get_token()
+    headers = {'X-Authorization': token}
     url = base_url + "package/byName/underscore"
-    response = requests.get(url)
+    response = requests.get(url, headers=headers)
     assert response.headers.get('content-type').startswith('application/json')
 
 def test_delete_package():
+    token = get_token()
+    headers = {'X-Authorization': token}
     url = base_url + "package/underscore"
-    response = requests.delete(url)
+    response = requests.delete(url, headers=headers)
     assert response.status_code == 200
 
 def test_put_package(): 
@@ -76,8 +84,10 @@ def test_post_get_packages():
     assert response.status_code == 200
 
 def test_del_package_byName():
+    token = get_token()
+    headers = {'X-Authorization': token}
     url = base_url + "package/byName/Underscore"
-    response = requests.delete(url)
+    response = requests.delete(url, headers=headers)
     assert response.status_code == 200
 
 def test_post_package_ingest():
@@ -95,8 +105,21 @@ def test_del_reg_reset():
     response = requests.delete(url, headers=headers)
     assert response.status_code == 200
 
+'''
 token = get_token()
 token = 'bearer '+token
 print(token)
-
 '{ "metadata": { "Name": "express", "Version": "4.17.1", "ID": "express" }, "data": { "Content": "test", "URL": "https://github.com/expressjs/express.git", "JSProgram": "if (process.argv.length === 7) {\nconsole.log("Success")\nprocess.exit(0)\n} else {\nconsole.log("Failed")\nprocess.exit(1)\n}\n" } }'
+{
+    "metadata": {
+        "Name": package.name,
+        "Version": package.version,
+        "ID": package.id
+    },
+    "data": {
+        "Content": package.content,
+        "URL": package.url,
+        "JSProgram": "if (process.argv.length === 7) {\nconsole.log('Success')\nprocess.exit(0)\n} else {\nconsole.log('Failed')\nprocess.exit(1)\n}\n"
+    }
+}
+'''
