@@ -1,6 +1,6 @@
 name: test and check project 1 contents
 on:
-  pull_request:
+  push:
     branches:
       - main
     types: [closed]
