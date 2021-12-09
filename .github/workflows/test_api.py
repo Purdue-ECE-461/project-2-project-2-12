@@ -105,6 +105,13 @@ def test_del_reg_reset():
     response = requests.delete(url, headers=headers)
     assert response.status_code == 200
 
+def test_get_packge_id():
+    token = get_token()
+    url = "https://github.com/jashkenas/underscore" + "/package/1"
+    header = {'X-Authorization': token}
+    response = requests.get(url, headers=header)
+    assert response.status_code == 201
+
 '''
 unused debugging functions
 token = get_token()
