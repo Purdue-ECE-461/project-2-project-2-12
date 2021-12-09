@@ -1,6 +1,6 @@
 name: test API 
 on:
-  pull_request:
+  push:
     branches:
       - main
 jobs:
