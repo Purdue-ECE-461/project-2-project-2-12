@@ -160,6 +160,10 @@ def packageCreate(curr_user):
 
             return package["metadata"], 201
         elif 'URL' in data:
+            package = PackageModel.query.filter_by(id=id).first()
+            if package:
+                return make_response("Package already exists !!", 403)
+
             url = data['URL']
             pkg = Package(url)
             score = pkg.total_score
@@ -191,7 +195,7 @@ def packageCreate(curr_user):
 
                 return meta_data, 201
             else:
-                return {"warning": "Package is not a trustworthy module"}
+                return {"warning": "Package is not a trustworthy module"}, 400
         else:
             return {"Error": "Malformed request."}, 400
 
