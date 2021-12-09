@@ -10,10 +10,10 @@ app.config['SECRET_KEY'] = 'whatisasecretkeyonemayask'
 
 db = SQLAlchemy(app)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{}:{}@/{}?unix_socket=/cloudsql/{}".format(
-#     'prembhanderi', 'justguess', 'mydatabase', 'ece-461-pyapi:us-east1:project2-mysql-database')
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{}:{}@/{}?unix_socket=/cloudsql/{}".format(
+    'prembhanderi', 'justguess', 'mydatabase', 'ece-461-pyapi:us-east1:project2-mysql-database')
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://prembhanderi:justguess@localhost:3306/mydatabase"
+# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://prembhanderi:justguess@localhost:3306/mydatabase"
 
 
 class UserModel(db.Model):

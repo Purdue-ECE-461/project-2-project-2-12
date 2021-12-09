@@ -14,21 +14,6 @@ from models import app, db
 from models import UserModel, PackageModel
 
 
-@app.route('/getPackages', methods=['GET'])
-@cross_origin()
-def home():
-    return {
-        1: {'name': 'Lodash', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
-        2: {'name': 'Test1', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
-        3: {'name': 'Test2', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
-        4: {'name': 'Test3', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
-        5: {'name': 'Test4', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
-        6: {'name': 'Test5', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
-        7: {'name': 'Test6', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
-        8: {'name': 'Test7', 'url': 'https://github.com/lodash/lodash', 'rating': 0.85},
-    }
-
-
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -161,10 +146,6 @@ def packageCreate(curr_user):
 
             return package["metadata"], 201
         elif 'URL' in data:
-            package = PackageModel.query.filter_by(id=id).first()
-            if package:
-                return make_response("Package already exists !!", 403)
-
             url = data['URL']
             pkg = Package(url)
             score = pkg.total_score
@@ -196,13 +177,13 @@ def packageCreate(curr_user):
 
                 return meta_data, 201
             else:
-                return {"warning": "Package is not a trustworthy module"}, 400
+                return {"warning": "Package is not a trustworthy module"}
         else:
             return {"Error": "Malformed request."}, 400
 
 
 @app.route('/packages', methods=['POST'])
-# @token_required
+@token_required
 def get_packages():
     offset = int(request.args.get('offset', 1)[0])
 
@@ -217,7 +198,6 @@ def get_packages():
 
         if offset > 1:
             packages = packages[offset*10:(offset*10)+10]
-        
 
         for pkg in packages:
             if '-' in pkg_version:
@@ -345,6 +325,22 @@ def remove_user(curr_user):
         return make_response("Account deleted!", 200)
     else:
         return make_response("You can only delete your own account", 400)
+
+
+@app.route('/getPackageList', methods=['GET'])
+def get_package_list():
+    packages = PackageModel.query.all()
+
+    out_arr = []
+    for pkg in packages:
+        package_item = {
+            "name": pkg.name,
+            "url": pkg.url,
+            "version": pkg.version
+        }
+        out_arr.append(package_item)
+
+    return {"items": out_arr}, 200
 
 
 if __name__ == "__main__":

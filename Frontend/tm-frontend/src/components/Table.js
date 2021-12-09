@@ -7,21 +7,23 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
-function createData(packageName, packageURL, rating) {
-  return { packageName, packageURL, rating };
+import axios from "axios";
+
+function createData(packageName, packageURL, version) {
+  return { packageName, packageURL, version };
 }
 
 function translateData(apiData) {
   const rows = [];
   for (const [key, value] of Object.entries(apiData)) {
-    rows.push(createData(value["name"], value["url"], value["rating"]));
+    rows.push(createData(value["name"], value["url"], value["version"]));
   }
 
+  console.log(rows);
   return rows;
 }
 
-let url = "https://ece-461-pyapi.ue.r.appspot.com/getPackages";
-url = "http://127.0.0.1:8080/getPackages";
+let url = "https://ece-461-pyapi.ue.r.appspot.com/getPackageList";
 
 export default function Header() {
   const [tableData, setTableData] = useState([]);
@@ -29,9 +31,11 @@ export default function Header() {
 
   // Component will mount
   useEffect(() => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((res) => setTableData(res));
+    (async () => {
+      const result = await axios(url);
+      console.log(result);
+      setTableData(result.data["items"]);
+    })();
   }, []);
 
   return (
@@ -49,7 +53,7 @@ export default function Header() {
             <TableRow>
               <TableCell>Package Name</TableCell>
               <TableCell align="left">Package URL</TableCell>
-              <TableCell align="right">Overall Rating</TableCell>
+              <TableCell align="right">Package Version</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -62,7 +66,7 @@ export default function Header() {
                   {row.packageName}
                 </TableCell>
                 <TableCell align="left">{row.packageURL}</TableCell>
-                <TableCell align="right">{row.rating}</TableCell>
+                <TableCell align="right">{row.version}</TableCell>
                 <TableCell align="right">Upload</TableCell>
               </TableRow>
             ))}
