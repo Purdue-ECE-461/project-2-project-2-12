@@ -57,7 +57,7 @@ def test_get_package_rate():
 def test_get_package_byName():
     token = get_token()
     headers = {'X-Authorization': token}
-    url = base_url + "package/express/underscore"
+    url = base_url + "package/byName/express"
     response = requests.get(url, headers=headers)
     assert response.headers.get('content-type').startswith('application/json')
 
