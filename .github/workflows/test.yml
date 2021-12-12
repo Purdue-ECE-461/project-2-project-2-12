@@ -1,0 +1,41 @@
+
+name: test and check project 1 contents
+on:
+  push:
+    branches:
+      - main
+    types: [closed]
+jobs:
+  build:
+    runs-on: ubuntu-latest 
+    strategy:
+      matrix:
+        python-version: [3.9]
+    env:
+      GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+      LOG_FILE: log.txt
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python3 -m pip install certifi==2021.5.30
+        python3 -m pip install charset-normalizer==2.0.6
+        python3 -m pip install idna==3.2
+        python3 -m pip install python-dotenv==0.19.0
+        python3 -m pip install requests==2.26.0
+        python3 -m pip install urllib3==1.26.6
+        python3 -m pip install bs4
+        python3 -m pip install pylint
+    - name: Run tests on project 1
+      run: |
+        export LOG_FILE=log.txt
+        python3 project-1-11/main.py project-1-11/url.txt
+    - name: Analysing the code with pylint
+      run: |
+        pylint -E project-1-11/main.py
+        pylint -E project-1-11/metrics.py
+        pylint -E project-1-11/request_handle.py

@@ -1,0 +1,4 @@
+INFO:root:URL: https://www.npmjs.com/package/lodash
+
+INFO:root:Repository Owner: lodash  Module: lodash
+WARNING:root:bad credentials

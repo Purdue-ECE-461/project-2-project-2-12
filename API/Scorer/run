@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+if [ "$1" == "install" ];
+then
+  source env/bin/activate
+  echo "I'm doing setup and pip installs here"
+  python -m pip install -r requirements.txt
+  deactivate
+elif [ "$1" == "test" ];
+then
+  python main.py url.txt
+else
+  source env/bin/activate
+  python main.py "$1"
+  deactivate
+fi
