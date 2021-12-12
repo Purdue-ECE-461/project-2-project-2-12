@@ -6,6 +6,8 @@ import logging
 from bs4 import BeautifulSoup
 import re
 
+from requests.api import head
+
 # Put your GITHUB_TOKEN to the variable in the .env file
 header = {
     'accept': 'application/vnd.github.v3+json',
@@ -40,6 +42,7 @@ def getRepo(owner, module):  # Returns the general information of the repo
     params = {}
     response = requests.get(url='https://api.github.com/repos/' + owner + '/' + module, headers=header,
                             params=params).json()
+
     if (len(response)) == 0:
         logging.warning("Error")
     return response

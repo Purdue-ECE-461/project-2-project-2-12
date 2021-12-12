@@ -140,7 +140,7 @@ def packageCreate(curr_user):
 
         if 'Content' in data:
             package_insert = PackageModel(name=meta_data["Name"], version=meta_data["Version"], id=meta_data["ID"],
-                                          url="", content=data["Content"], action="CREATE", actionTime=str(datetime.now()))
+                                          url=data["URL"], content=data["Content"], action="CREATE", actionTime=str(datetime.now()))
             db.session.add(package_insert)
             db.session.commit()
 
@@ -160,18 +160,24 @@ def packageCreate(curr_user):
 
                 r = requests.get(url, headers=headers)
                 if r.status_code == 200:
-                    with open(f'repo.{ext}', 'wb') as f:
-                        f.write(r.content)
+                    # Write content here
+                    content = base64.b64encode(r.content)
+                
+                # r = requests.get(url, headers=headers)
+                # if r.status_code == 200:
+                #     with open(f'repo.{ext}', 'wb') as f:
+                #         f.write(r.content)
 
-                """ Encode the .zip file in base64 """
-                with open("repo.zip", "rb") as f:
-                    bytes = f.read()
-                    content = base64.b64encode(bytes)
+                # """ Encode the .zip file in base64 """
+                # with open("repo.zip", "rb") as f:
+                #     bytes = f.read()
+                #     content = base64.b64encode(bytes)
+
 
                 """ Update package's content field with base64 encoding and upload to database """
                 data["Content"] = content
                 package_insert = PackageModel(name=meta_data["Name"], version=meta_data["Version"], id=meta_data["ID"],
-                                              url="", content=data["Content"], action="INGEST", actionTime=str(datetime.now()))
+                                              url=data["URL"], content=data["Content"], action="INGEST", actionTime=str(datetime.now()))
                 db.session.add(package_insert)
                 db.session.commit()
 
@@ -184,8 +190,9 @@ def packageCreate(curr_user):
 
 @app.route('/packages', methods=['POST'])
 @token_required
-def get_packages():
+def get_packages(curr_user):
     offset = int(request.args.get('offset', 1)[0])
+    print(offset)
 
     packages = request.json
     out_arr = []
@@ -195,35 +202,35 @@ def get_packages():
 
         packages = PackageModel.query.filter_by(name=pkg_name).all()
         print(packages)
+        if packages:
+            if offset > 1:
+                packages = packages[offset*10:(offset*10)+10]
 
-        if offset > 1:
-            packages = packages[offset*10:(offset*10)+10]
+            for pkg in packages:
+                if '-' in pkg_version:
+                    # Version range
+                    lower_version, higher_version = pkg_version.split('-')
 
-        for pkg in packages:
-            if '-' in pkg_version:
-                # Version range
-                lower_version, higher_version = pkg_version.split('-')
+                    within_range = (semver.compare(pkg.version, str(lower_version)) == 1) and (
+                        semver.compare(pkg.version, str(higher_version)) == -1)
 
-                within_range = (semver.compare(pkg.version, str(lower_version)) == 1) and (
-                    semver.compare(pkg.version, str(higher_version)) == -1)
+                    is_range = (semver.compare(pkg.version, str(lower_version)) == 0) or (
+                        semver.compare(str(higher_version), pkg.version) == 0)
 
-                is_range = (semver.compare(pkg.version, str(lower_version)) == 0) or (
-                    semver.compare(str(higher_version), pkg.version) == 0)
-
-                if within_range or is_range:
-                    out_arr.append({
-                        "Name": pkg.name,
-                        "Version": pkg.version,
-                        "ID": pkg.id
-                    })
-            else:
-                # Only one version
-                if pkg_version == pkg.version:
-                    out_arr.append({
-                        "Name": pkg.name,
-                        "Version": pkg.version,
-                        "ID": pkg.id
-                    })
+                    if within_range or is_range:
+                        out_arr.append({
+                            "Name": pkg.name,
+                            "Version": pkg.version,
+                            "ID": pkg.id
+                        })
+                else:
+                    # Only one version
+                    if pkg_version == pkg.version:
+                        out_arr.append({
+                            "Name": pkg.name,
+                            "Version": pkg.version,
+                            "ID": pkg.id
+                        })
 
     return {"result": out_arr}
 
